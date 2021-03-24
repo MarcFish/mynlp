@@ -3,7 +3,7 @@ import tensorflow.keras as keras
 import tensorflow_addons as tfa
 from data import get_wiki_data, START_VOCAB, END_VOCAB
 from layers import PositionEmbedding, TransformerEncodeBlock, SelfAttentionMask
-from utils import WarmSchedule, MaskSparseCategoricalCrossentropy
+from utils import WarmSchedule, MaskSparseCategoricalCrossentropy, SaveCallback
 import numpy as np
 
 
@@ -32,12 +32,12 @@ def get_albert(vocab_size, num_layers=4, d_model=256, num_heads=8, dff=512, drop
     return keras.Model(inputs=enc_in, outputs=o)
 
 
-num_layers = 4
-d_model = 32
+num_layers = 8
+d_model = 128
 dff = d_model * 4
 num_heads = 8
 model = get_albert(VOCAB_SIZE, num_layers=num_layers, d_model=d_model, dff=dff, num_heads=num_heads)
 model.summary()
 keras.utils.plot_model(model, show_shapes=True, expand_nested=True)
 model.compile(optimizer=tfa.optimizers.AdamW(learning_rate=WarmSchedule(d_model), weight_decay=1e-4), loss=MaskSparseCategoricalCrossentropy)
-model.fit(data, epochs=5)
+model.fit(data, epochs=10, callbacks=[SaveCallback()])

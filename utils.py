@@ -20,3 +20,18 @@ def MaskSparseCategoricalCrossentropy(y_true, y_pred):
     mask = tf.cast(mask, dtype=loss.dtype)
     loss *= mask
     return tf.reduce_sum(loss) / tf.reduce_sum(mask)
+
+
+class SaveCallback(keras.callbacks.Callback):
+    def __init__(self, save_step=100):
+        super(SaveCallback, self).__init__()
+        self.save_step = save_step
+
+    def on_train_begin(self, logs=None):
+        self.ckpt = tf.train.Checkpoint(step=tf.Variable(1), model=self.model, opt=self.model.optimizer)
+        self.manager = tf.train.CheckpointManager(self.ckpt, './ckpts', max_to_keep=5)
+        self.ckpt.restore(self.manager.latest_checkpoint)
+
+    def on_train_batch_end(self, batch, logs=None):
+        if batch % self.save_step == 0:
+            self.manager.save(batch)
