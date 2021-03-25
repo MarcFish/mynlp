@@ -15,7 +15,7 @@ def bert_process(inp):
 
 
 MAX_LEN = 200
-TOKEN, VOCAB_SIZE, data = get_wiki_data(bert_process, batch_size=256, workers=13, max_len=MAX_LEN)
+TOKEN, VOCAB_SIZE, data = get_wiki_data(bert_process, batch_size=256, workers=5, max_len=MAX_LEN)
 
 
 def get_albert(vocab_size, num_layers=4, d_model=256, num_heads=8, dff=512, dropout_prob=0.1):
@@ -35,7 +35,7 @@ def get_albert(vocab_size, num_layers=4, d_model=256, num_heads=8, dff=512, drop
 num_layers = 8
 d_model = 128
 dff = d_model * 4
-num_heads = 8
+num_heads = 12
 model = get_albert(VOCAB_SIZE, num_layers=num_layers, d_model=d_model, dff=dff, num_heads=num_heads)
 model.summary()
 keras.utils.plot_model(model, show_shapes=True, expand_nested=True)

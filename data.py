@@ -65,7 +65,7 @@ def get_wiki_data(process_func, batch_size=32, workers=10, vocab_size=30000, max
             .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
         return TOKEN, len(TOKEN.word_index) + 1, train_data
     else:
-        dir_list = [str(d) for d in path.iterdir()]
+        dir_list = [str(d) for d in path.iterdir() if len(d.name) == 2]
 
         def get_vocab_set(path):
             vocab = Counter()
@@ -81,6 +81,7 @@ def get_wiki_data(process_func, batch_size=32, workers=10, vocab_size=30000, max
         vocab = [MASK_VOCAB] + [word for (word, freq) in result]
         TOKEN = keras.preprocessing.text.Tokenizer(oov_token=OOV_VOCAB)
         TOKEN.fit_on_texts(vocab)
+        del vocab, result, results
         with open(token_file, 'w', encoding='utf-8') as f:
             f.write(TOKEN.to_json())
         VOCAB_SIZE = len(TOKEN.word_index) + 1
@@ -104,7 +105,9 @@ def get_wiki_data(process_func, batch_size=32, workers=10, vocab_size=30000, max
             return o
         results = Parallel(n_jobs=workers)(delayed(get_seq)(dirs) for dirs in dir_list)
         result = np.concatenate(results, axis=0)
+        del results
         train_data = tf.data.Dataset.from_tensor_slices(result)
+        del result
         tf.data.experimental.save(train_data, str(data_file))
         train_data = train_data\
             .batch(batch_size=batch_size, drop_remainder=True)\
